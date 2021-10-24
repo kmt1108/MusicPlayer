@@ -1,5 +1,6 @@
 package com.kmt.musicplayer;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -9,11 +10,16 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
+import android.media.MediaMetadata;
 import android.media.MediaPlayer;
 import android.media.ThumbnailUtils;
+import android.media.session.PlaybackState;
 import android.net.Uri;
 import android.os.IBinder;
+import android.os.SystemClock;
+import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
 import android.util.Size;
 import android.widget.Toast;
@@ -127,6 +133,7 @@ public class PlayerServices extends Service {
                 }
             }else{
                 mMediaPlayer.seekTo(0);
+                sendNotificationPlayer(listPlayer.get(currentPosition));
             }
         }
     }
@@ -202,8 +209,24 @@ public class PlayerServices extends Service {
         mMediaPlayer.start();
     }
 
+    @SuppressLint("WrongConstant")
     private void sendNotificationPlayer(SongDetails song) {
         MediaSessionCompat sessionCompat = new MediaSessionCompat(this, "player");
+        sessionCompat.setActive(true);
+        sessionCompat.setMetadata(new MediaMetadataCompat.Builder()
+                .putLong(MediaMetadataCompat.METADATA_KEY_DURATION,mMediaPlayer.getDuration()).build());
+        sessionCompat.setPlaybackState(new PlaybackStateCompat.Builder()
+                .setState(PlaybackStateCompat.STATE_PLAYING,mMediaPlayer.getCurrentPosition(),1f,SystemClock.elapsedRealtime())
+                .setActions(PlaybackState.ACTION_SEEK_TO)
+                .build());
+        sessionCompat.setCallback(new MediaSessionCompat.Callback() {
+            @Override
+            public void onSeekTo(long pos) {
+                super.onSeekTo(pos);
+                mMediaPlayer.seekTo((int) pos);
+                sendNotificationPlayer(listPlayer.get(currentPosition));
+            }
+        });
         Bitmap thumbail;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
             try {
