@@ -41,12 +41,18 @@ public class PlayerServices extends Service {
     public static final int ACTION_PAUSE = 2;
     public static final int ACTION_RESUME = 3;
     public static final int ACTION_STOP = 0;
+
+    public static final int REPEAT_MODE_NO_REPEAT = 0;
+    public static final int REPEAT_MODE_SINGLE = 1;
+    public static final int REPEAT_MODE_ALL = 2;
+
+
     private static final String TAG_ERROR ="PlayerServices" ;
     ArrayList<SongDetails> listPlayer;
     MediaPlayer mMediaPlayer;
     private boolean isPlaying;
     private boolean isShuffle;
-    private boolean isRepeat;
+    private int repeatMode;
     private int currentPosition;
 
     @Nullable
@@ -89,7 +95,7 @@ public class PlayerServices extends Service {
 
     private void nextPlayer() {
         if (mMediaPlayer!=null&&listPlayer.size()>1){
-            if (isRepeat){
+            if (repeatMode==REPEAT_MODE_ALL){
                 if (currentPosition==listPlayer.size()-1){
                     currentPosition=0;
                     playSongInList(0);
@@ -99,8 +105,14 @@ public class PlayerServices extends Service {
                     playSongInList(currentPosition);
                     sendNotificationPlayer(listPlayer.get(currentPosition));
                 }
-            }else{
-                Toast.makeText(this, getString(R.string.alert_no_next), Toast.LENGTH_SHORT).show();
+            }else if(repeatMode==REPEAT_MODE_NO_REPEAT||repeatMode==REPEAT_MODE_SINGLE){
+                if (currentPosition==listPlayer.size()-1){
+                    Toast.makeText(this, getString(R.string.alert_no_next), Toast.LENGTH_SHORT).show();
+                }else{
+                    currentPosition=currentPosition+1;
+                    playSongInList(currentPosition);
+                    sendNotificationPlayer(listPlayer.get(currentPosition));
+                }
             }
         }
     }
