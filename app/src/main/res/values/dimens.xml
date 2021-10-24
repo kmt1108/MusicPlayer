@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="margin_top_activity">10dp</dimen>
+    <dimen name="margin_start_activity">10dp</dimen>
+    <dimen name="margin_end_activity">10dp</dimen>
+    <dimen name="element_margin_top">5dp</dimen>
+    <dimen name="space_item_gridview">15dp</dimen>
+    <dimen name="margin_bottom_tittle">20dp</dimen>
+    <dimen name="margin_bottom_activity">20dp</dimen>
+    <dimen name="size_icon_parent_list_song">40dp</dimen>
+    <dimen name="listview_item_margin">2dp</dimen>
+    <dimen name="size_icon_child_list_song">35dp</dimen>
+</resources>

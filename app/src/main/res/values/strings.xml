@@ -1,0 +1,36 @@
+<resources>
+    <string name="app_name">MusicPlayer</string>
+    <string name="title_library">Music Library</string>
+    <string name="title_tool">Tools</string>
+    <string name="title_library_allsong">All song</string>
+    <string name="title_library_folder">Folder explore</string>
+    <string name="title_library_playlist">Your playlist</string>
+    <string name="title_library_download">Downloads</string>
+    <string name="title_tools_yt_downloader">YT Downloader</string>
+    <string name="tittle_allsong">All songs</string>
+    <string name="tittle_folder_explore">Folder Explore</string>
+    <string name="alert_no_next">Can\'t next: This xong is last of list</string>
+
+    <string-array name="arr_title_bibr_item">
+        <item>@string/title_library_allsong</item>
+        <item>@string/title_library_folder</item>
+        <item>@string/title_library_playlist</item>
+        <item>@string/title_library_download</item>
+    </string-array>
+
+    <string-array name="arr_title_tools_item">
+        <item>@string/title_tools_yt_downloader</item>
+    </string-array>
+
+    <string-array name="arr_img_libr_item">
+        <item>library_allsong</item>
+        <item>library_folder</item>
+        <item>library_playlist</item>
+        <item>library_download</item>
+    </string-array>
+
+    <string-array name="arr_img_tools_item">
+        <item>tools_yt_downloader</item>
+    </string-array>
+
+</resources>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_main"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="@string/title_library"
+        android:textSize="22dp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="@+id/searchSong"
+        app:layout_constraintTop_toBottomOf="@+id/searchSong" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="@string/title_tool"
+        android:textSize="22dp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="@+id/searchSong"
+        app:layout_constraintTop_toBottomOf="@+id/grvLibrary" />
+
+    <SearchView
+        android:id="@+id/searchSong"
+        android:layout_width="0dp"
+        android:layout_height="45dp"
+        android:layout_marginStart="@dimen/margin_start_activity"
+        android:layout_marginTop="@dimen/margin_top_activity"
+        android:layout_marginEnd="@dimen/margin_end_activity"
+        android:background="@drawable/shape_search_song"
+        app:layout_constraintEnd_toStartOf="@+id/imageView2"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <GridView
+        android:id="@+id/grvLibrary"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:horizontalSpacing="@dimen/space_item_gridview"
+        android:padding="@dimen/margin_start_activity"
+        android:numColumns="2"
+        android:paddingStart="10dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="10dp"
+        android:paddingBottom="10dp"
+        android:clipToPadding="false"
+        android:verticalSpacing="@dimen/space_item_gridview"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView"></GridView>
+
+    <GridView
+        android:id="@+id/grvTool"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:numColumns="2"
+        android:paddingStart="10dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="10dp"
+        android:paddingBottom="10dp"
+        android:clipToPadding="false"
+        android:verticalSpacing="@dimen/space_item_gridview"
+        android:horizontalSpacing="@dimen/space_item_gridview"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView2"></GridView>
+
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_marginTop="@dimen/margin_top_activity"
+        android:layout_marginEnd="@dimen/margin_end_activity"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/main_to_play_music" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

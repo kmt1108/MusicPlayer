@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/player_background"
+    tools:context=".ActivityPlayer">
+
+    <ImageButton
+        android:id="@+id/btCurrentlist"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="20dp"
+        android:background="@null"
+        android:scaleType="fitXY"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/player_playlist" />
+
+    <ImageButton
+        android:id="@+id/btBack"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:background="@null"
+        android:scaleType="fitXY"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/player_back" />
+
+    <ImageButton
+        android:id="@+id/btShuffle"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginBottom="30dp"
+        android:background="@null"
+        android:scaleType="fitXY"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:srcCompat="@drawable/player_shuffle" />
+
+    <ImageButton
+        android:id="@+id/btPrevious"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginBottom="30dp"
+        android:background="@null"
+        android:scaleType="fitXY"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/btShuffle"
+        app:srcCompat="@drawable/player_previoustrack" />
+
+    <ImageButton
+        android:id="@+id/btNext"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="30dp"
+        android:background="@null"
+        android:scaleType="fitXY"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/btRepeat"
+        app:srcCompat="@drawable/player_nexttrack" />
+
+    <ImageButton
+        android:id="@+id/btPlayPause"
+        android:layout_width="75dp"
+        android:layout_height="75dp"
+        android:layout_marginBottom="28dp"
+        android:background="@null"
+        android:scaleType="fitXY"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/btNext"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/btPrevious"
+        app:srcCompat="@drawable/player_playbutton" />
+
+    <ImageButton
+        android:id="@+id/btRepeat"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginEnd="30dp"
+        android:layout_marginBottom="30dp"
+        android:background="@null"
+        android:scaleType="fitXY"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:srcCompat="@drawable/player_repeat" />
+
+    <TextView
+        android:id="@+id/txtSongName"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        android:singleLine="true"
+        android:text="Song Name"
+        android:ellipsize="marquee"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:scrollHorizontally="true"
+        android:textAlignment="center"
+        android:textColor="#E53935"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@+id/btCurrentlist"
+        app:layout_constraintHorizontal_bias="0.485"
+        app:layout_constraintStart_toEndOf="@+id/btBack"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="30dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/background_disc"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@+id/btPlayPause"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/txtSongName">
+
+        <ImageView
+            android:id="@+id/imageViewDisc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
+            android:layout_weight="1"
+            app:srcCompat="@drawable/player_disc" />
+    </LinearLayout>
+
+    <SeekBar
+        android:id="@+id/seekBarController"
+        style="@android:style/Widget.DeviceDefault.Light.SeekBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:progressBackgroundTint="#7C390B0B"
+        android:progressTint="#F50D0D"
+        android:thumbTint="#FB0803"
+        app:layout_constraintBottom_toTopOf="@+id/btPlayPause"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/tvRunTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="00:00"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/btPlayPause" />
+
+    <TextView
+        android:id="@+id/tvDestTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:text="00:00"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/btPlayPause" />
+</androidx.constraintlayout.widget.ConstraintLayout>
