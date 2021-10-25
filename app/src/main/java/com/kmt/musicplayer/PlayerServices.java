@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.AudioAttributes;
@@ -27,6 +28,9 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationCompatExtras;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
+import com.google.gson.Gson;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,6 +39,12 @@ import java.util.ArrayList;
 import static com.kmt.musicplayer.MyApplication.CHANNEL_ID;
 
 public class PlayerServices extends Service {
+    public static final String CURRENT_SETTING = "current_setting";
+    public static final String KEY_CURRENT_SONG = "current_setting_song";
+    public static final String KEY_SHUFFLE = "current_setting_shuffle";
+    public static final String KEY_REPEAT_MODE = "current_setting_repeat";
+    public static final String KEY_PLAYING_STATE = "current_playing_state";
+
     private static final int NOTIFICATION_PLAY_MUSIC = 111;
 
     public static final String ACTION_CONTROL_PLAYER = "control_player";
@@ -52,8 +62,9 @@ public class PlayerServices extends Service {
     public static final int REPEAT_MODE_SINGLE = 1;
     public static final int REPEAT_MODE_ALL = 2;
 
-
     private static final String TAG_ERROR ="PlayerServices" ;
+
+    SharedPreferences currentSettingStorage;
     ArrayList<SongDetails> listPlayer;
     MediaPlayer mMediaPlayer;
     private boolean isPlaying;
@@ -80,9 +91,13 @@ public class PlayerServices extends Service {
         switch (action) {
             case ACTION_START:
                 startPlayer(intent);
+                sendActionToActivity(action);
+                saveCurrentSetting(listPlayer.get(currentPosition));
+                getSettingState();
                 break;
             case ACTION_PAUSE:
                 pausePlayer();
+                sendActionToActivity(action);
                 break;
             case ACTION_RESUME:
                 resumePlayer();
@@ -97,6 +112,32 @@ public class PlayerServices extends Service {
                 stopSelf();
                 break;
         }
+    }
+
+    private void sendActionToActivity(int action) {
+        Intent intent=new Intent();
+        intent.setAction(ACTION_CONTROL_PLAYER);
+        intent.putExtra(ACTION_CONTROL_PLAYER,action);
+        intent.putExtra(KEY_PLAYING_STATE,isPlaying);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
+    private void getSettingState() {
+        currentSettingStorage=getSharedPreferences(CURRENT_SETTING,MODE_PRIVATE);
+        isShuffle=currentSettingStorage.getBoolean(KEY_SHUFFLE,false);
+        repeatMode=currentSettingStorage.getInt(KEY_REPEAT_MODE,REPEAT_MODE_NO_REPEAT);
+    }
+
+    private void saveCurrentSetting(SongDetails song) {
+        currentSettingStorage=getSharedPreferences(CURRENT_SETTING,Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor=currentSettingStorage.edit();
+        String jsonSong = getJsonFromSong(song);
+        editor.putString(KEY_CURRENT_SONG,jsonSong);
+        editor.apply();
+    }
+    public String getJsonFromSong(SongDetails song) {
+        Gson gson=new Gson();
+        return gson.toJson(song);
     }
 
     private void nextPlayer() {
@@ -158,9 +199,11 @@ public class PlayerServices extends Service {
         SongDetails song = intent.getParcelableExtra("song");
         if (song != null) {
             if (listPlayer.contains(song)) {
-                currentPosition=listPlayer.indexOf(song);
-                playSongInList(currentPosition);
-                sendNotificationPlayer(song);
+                if (listPlayer.indexOf(song)!=currentPosition){
+                    currentPosition=listPlayer.indexOf(song);
+                    playSongInList(currentPosition);
+                    sendNotificationPlayer(song);
+                }
             }else{
                 listPlayer.add(song);
                 currentPosition=listPlayer.indexOf(song);
@@ -227,17 +270,7 @@ public class PlayerServices extends Service {
                 sendNotificationPlayer(listPlayer.get(currentPosition));
             }
         });
-        Bitmap thumbail;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-            try {
-                thumbail = ThumbnailUtils.createAudioThumbnail(new File(song.getmPath()), new Size(256, 256), null);
-            } catch (IOException e) {
-                Log.e(TAG_ERROR,"sendNotificationPlayer:load thumbail Error");
-                thumbail = BitmapFactory.decodeResource(getResources(), R.drawable.player_disc);
-            }
-        } else {
-            thumbail = BitmapFactory.decodeResource(getResources(), R.drawable.player_disc);
-        }
+        Bitmap thumbail=getSongThumbail(song.getmPath(),256,256);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle(song.getmTitle())
                 .setContentText(song.getmArtist())
@@ -260,6 +293,21 @@ public class PlayerServices extends Service {
         Notification notification=builder.build();
                 
         startForeground(NOTIFICATION_PLAY_MUSIC, notification);
+    }
+
+    private Bitmap getSongThumbail(String path, int width, int height) {
+        Bitmap thumbail;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            try {
+                thumbail = ThumbnailUtils.createAudioThumbnail(new File(path), new Size(width, height), null);
+            } catch (IOException e) {
+                Log.e(TAG_ERROR,"sendNotificationPlayer:load thumbail Error");
+                thumbail = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.player_disc),width,height,true);
+            }
+        } else {
+            thumbail = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.player_disc),width,height,true);
+        }
+        return thumbail;
     }
 
     private PendingIntent getActionControlPlayerIntent(Context context, int action) {

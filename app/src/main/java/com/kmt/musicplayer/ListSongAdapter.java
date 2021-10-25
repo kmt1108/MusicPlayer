@@ -2,6 +2,7 @@ package com.kmt.musicplayer;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -43,13 +44,13 @@ public class ListSongAdapter extends RecyclerView.Adapter<ListSongAdapter.MyView
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent=new Intent(context,PlayerServices.class);
+                Intent intent=new Intent(context,ActivityPlayer.class);
                 intent.setAction(ACTION_CONTROL_PLAYER);
                 /*intent.putExtra("path",song.getmPath());
                 context.startActivity(intent);*/
                 intent.putExtra(ACTION_CONTROL_PLAYER,ACTION_START);
                 intent.putExtra("song",song);
-                context.startService(intent);
+                context.startActivity(intent);
             }
         });
     }

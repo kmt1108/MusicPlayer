@@ -11,24 +11,24 @@
         android:id="@+id/btCurrentlist"
         android:layout_width="35dp"
         android:layout_height="35dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="20dp"
+        android:layout_marginEnd="@dimen/margin_end_activity"
         android:background="@null"
         android:scaleType="fitXY"
+        app:layout_constraintBottom_toBottomOf="@+id/layoutSongInfo"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/layoutSongInfo"
         app:srcCompat="@drawable/player_playlist" />
 
     <ImageButton
         android:id="@+id/btBack"
         android:layout_width="35dp"
         android:layout_height="35dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginStart="@dimen/margin_start_activity"
         android:background="@null"
         android:scaleType="fitXY"
+        app:layout_constraintBottom_toBottomOf="@+id/layoutSongInfo"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/layoutSongInfo"
         app:srcCompat="@drawable/player_back" />
 
     <ImageButton
@@ -36,11 +36,11 @@
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_marginStart="30dp"
-        android:layout_marginBottom="30dp"
         android:background="@null"
         android:scaleType="fitXY"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toBottomOf="@+id/btPrevious"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/btPrevious"
         app:srcCompat="@drawable/player_shuffle" />
 
     <ImageButton
@@ -48,11 +48,11 @@
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_marginStart="20dp"
-        android:layout_marginBottom="30dp"
         android:background="@null"
         android:scaleType="fitXY"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toBottomOf="@+id/btPlayPause"
         app:layout_constraintStart_toEndOf="@+id/btShuffle"
+        app:layout_constraintTop_toTopOf="@+id/btPlayPause"
         app:srcCompat="@drawable/player_previoustrack" />
 
     <ImageButton
@@ -60,18 +60,18 @@
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_marginEnd="20dp"
-        android:layout_marginBottom="30dp"
         android:background="@null"
         android:scaleType="fitXY"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toBottomOf="@+id/btPlayPause"
         app:layout_constraintEnd_toStartOf="@+id/btRepeat"
+        app:layout_constraintTop_toTopOf="@+id/btPlayPause"
         app:srcCompat="@drawable/player_nexttrack" />
 
     <ImageButton
         android:id="@+id/btPlayPause"
         android:layout_width="75dp"
         android:layout_height="75dp"
-        android:layout_marginBottom="28dp"
+        android:layout_marginBottom="@dimen/margin_bottom_activity"
         android:background="@null"
         android:scaleType="fitXY"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -85,56 +85,89 @@
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_marginEnd="30dp"
-        android:layout_marginBottom="30dp"
         android:background="@null"
         android:scaleType="fitXY"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toBottomOf="@+id/btPlayPause"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/btPlayPause"
         app:srcCompat="@drawable/player_repeat" />
 
-    <TextView
-        android:id="@+id/txtSongName"
-        android:layout_width="250dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="25dp"
-        android:singleLine="true"
-        android:text="Song Name"
-        android:ellipsize="marquee"
-        android:marqueeRepeatLimit="marquee_forever"
-        android:scrollHorizontally="true"
-        android:textAlignment="center"
-        android:textColor="#E53935"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toStartOf="@+id/btCurrentlist"
-        app:layout_constraintHorizontal_bias="0.485"
-        app:layout_constraintStart_toEndOf="@+id/btBack"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <LinearLayout
+        android:id="@+id/layoutSongInfo"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_top_activity"
+        android:orientation="vertical"
+        app:layout_constraintLeft_toRightOf="@+id/btBack"
+        app:layout_constraintRight_toLeftOf="@+id/btCurrentlist"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/txtSongName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:paddingHorizontal="10dp"
+            android:scrollHorizontally="true"
+            android:singleLine="true"
+            android:text="Song Name"
+            android:textAlignment="center"
+            android:textColor="#E53935"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@+id/btCurrentlist"
+            app:layout_constraintHorizontal_bias="0.485"
+            app:layout_constraintStart_toEndOf="@+id/btBack"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/txtArtist"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="marquee"
+            android:paddingHorizontal="10dp"
+            android:singleLine="true"
+            android:text="Artist"
+            android:textAlignment="center"
+            android:textColor="#E53935"
+            android:textSize="20sp"
+            android:textStyle="italic"
+            app:layout_constraintEnd_toStartOf="@+id/btCurrentlist"
+            app:layout_constraintHorizontal_bias="0.485"
+            app:layout_constraintStart_toEndOf="@+id/btBack"
+            app:layout_constraintTop_toTopOf="parent" />
+    </LinearLayout>
+
+    <RelativeLayout
         android:id="@+id/linearLayout"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="30dp"
-        android:layout_marginEnd="20dp"
-        android:layout_marginBottom="20dp"
+        android:layout_marginStart="@dimen/margin_start_activity"
+        android:layout_marginTop="@dimen/margin_bottom_tittle"
+        android:layout_marginEnd="@dimen/margin_end_activity"
         android:background="@drawable/background_disc"
-        android:orientation="horizontal"
-        app:layout_constraintBottom_toTopOf="@+id/btPlayPause"
+        app:layout_constraintBottom_toTopOf="@+id/seekBarController"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txtSongName">
-
-        <ImageView
-            android:id="@+id/imageViewDisc"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="30dp"
-            android:layout_marginRight="30dp"
-            android:layout_weight="1"
-            app:srcCompat="@drawable/player_disc" />
-    </LinearLayout>
+        app:layout_constraintTop_toBottomOf="@+id/layoutSongInfo">
+        <androidx.cardview.widget.CardView
+            app:cardCornerRadius="160dp"
+            app:cardElevation="20dp"
+            android:padding="10dp"
+            app:cardBackgroundColor="@android:color/transparent"
+            android:layout_width="320dp"
+            android:layout_height="320dp"
+            android:layout_centerInParent="true">
+            <ImageView
+                android:id="@+id/imageViewDisc"
+                android:layout_centerInParent="true"
+                android:src="@drawable/player_disc"
+                android:scaleType="fitXY"
+                android:layout_height="match_parent"
+                android:layout_width="match_parent" />
+        </androidx.cardview.widget.CardView>
+    </RelativeLayout>
 
     <SeekBar
         android:id="@+id/seekBarController"
