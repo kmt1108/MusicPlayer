@@ -10,6 +10,7 @@
     <string name="tittle_allsong">All songs</string>
     <string name="tittle_folder_explore">Folder Explore</string>
     <string name="alert_no_next">Can\'t next: This xong is last of list</string>
+    <string name="default_song_name">Song Name</string>
 
     <string-array name="arr_title_bibr_item">
         <item>@string/title_library_allsong</item>

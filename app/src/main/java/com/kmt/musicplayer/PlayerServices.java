@@ -93,7 +93,6 @@ public class PlayerServices extends Service {
                 startPlayer(intent);
                 sendActionToActivity(action);
                 saveCurrentSetting(listPlayer.get(currentPosition));
-                getSettingState();
                 break;
             case ACTION_PAUSE:
                 pausePlayer();
@@ -101,6 +100,7 @@ public class PlayerServices extends Service {
                 break;
             case ACTION_RESUME:
                 resumePlayer();
+                sendActionToActivity(action);
                 break;
             case ACTION_SKIP_PREVIOUS:
                 previousPlayer();
@@ -323,6 +323,7 @@ public class PlayerServices extends Service {
         if (listPlayer == null) {
             listPlayer = new ArrayList<>();
         }
+        getSettingState();
 
     }
 
