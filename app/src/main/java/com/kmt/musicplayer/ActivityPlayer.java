@@ -1,8 +1,5 @@
 package com.kmt.musicplayer;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.BroadcastReceiver;
@@ -10,17 +7,14 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.AudioAttributes;
-import android.media.MediaPlayer;
 import android.media.ThumbnailUtils;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.text.method.ScrollingMovementMethod;
+import android.os.IBinder;
 import android.util.Log;
 import android.util.Size;
 import android.view.View;
@@ -29,6 +23,9 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.google.gson.Gson;
 
@@ -49,6 +46,7 @@ public class ActivityPlayer extends AppCompatActivity {
     private boolean isPlaying;
     private int repeatMode=PlayerServices.REPEAT_MODE_NO_REPEAT;
     private boolean isShuffle;
+    private boolean isServicesConnected;
 
 
     final DateFormat df=new SimpleDateFormat("mm:ss");
@@ -57,6 +55,32 @@ public class ActivityPlayer extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             syncControlPlayer(intent);
+        }
+    };
+    private ServiceConnection serviceConnection=new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            PlayerServices.MyBinder myBinder= (PlayerServices.MyBinder) service;
+            PlayerServices playerServices=myBinder.getPlayerServices();
+            long duration=playerServices.getDurationPlayer();
+            tvDestime.setText(df.format(duration));
+            seekBarProgress.setMax((int) (duration/1000));
+            Handler handler=new Handler();
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    long position= playerServices.getCurrentPositionPlayer();
+                    seekBarProgress.setProgress((int) (position/1000));
+                    tvRuntime.setText(df.format(position));
+                    handler.postDelayed(this,1000);
+                }
+            });
+            isServicesConnected=true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            isServicesConnected=false;
         }
     };
 
@@ -73,10 +97,57 @@ public class ActivityPlayer extends AppCompatActivity {
             ComponentName componentName=new ComponentName(this,PlayerServices.class);
             intent.setComponent(componentName);
             startService(intent);
+            bindService(intent,serviceConnection,Context.BIND_AUTO_CREATE);
         }
         setDiscAnimation();
 
+        btPlayPause.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isPlaying){
+                    sendActionToServices(PlayerServices.ACTION_PAUSE);
+                }else{
+                    sendActionToServices(PlayerServices.ACTION_RESUME);
+                }
+            }
+        });
+        btPrevious.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendActionToServices(PlayerServices.ACTION_SKIP_PREVIOUS);
+            }
+        });
+        btNext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendActionToServices(PlayerServices.ACTION_SKIP_NEXT);
+            }
+        });
+
     }
+
+    private void sendActionToServices(int action) {
+        Intent intent=new Intent(this,PlayerServices.class);
+        intent.setAction(PlayerServices.ACTION_CONTROL_PLAYER);
+        switch (action){
+            case PlayerServices.ACTION_RESUME:
+                intent.putExtra(PlayerServices.ACTION_CONTROL_PLAYER,action);
+                break;
+            case PlayerServices.ACTION_PAUSE:
+                intent.putExtra(PlayerServices.ACTION_CONTROL_PLAYER,action);
+                break;
+            case PlayerServices.ACTION_SKIP_NEXT:
+                intent.putExtra(PlayerServices.ACTION_CONTROL_PLAYER,action);
+                break;
+            case PlayerServices.ACTION_SKIP_PREVIOUS:
+                intent.putExtra(PlayerServices.ACTION_CONTROL_PLAYER,action);
+                break;
+            case PlayerServices.ACTION_SEEK_TO:
+                break;
+        }
+        startService(intent);
+    }
+
     private void syncControlPlayer(Intent intent) {
         int action=intent.getIntExtra(PlayerServices.ACTION_CONTROL_PLAYER,-1);
         switch (action){
@@ -145,7 +216,11 @@ public class ActivityPlayer extends AppCompatActivity {
 
     private void setDiscState(){
         if (isPlaying){
-            discRoudingAnimation.start();
+            if (discRoudingAnimation.isStarted()){
+                discRoudingAnimation.resume();
+            }else {
+                discRoudingAnimation.start();
+            }
         }else{
             discRoudingAnimation.pause();
         }
@@ -179,10 +254,17 @@ public class ActivityPlayer extends AppCompatActivity {
 
 
     }
+    private void stopBindServices(){
+        if (isServicesConnected){
+            unbindService(serviceConnection);
+        }
+        isServicesConnected=false;
+    }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiverPlayerControl);
+        stopBindServices();
     }
 }

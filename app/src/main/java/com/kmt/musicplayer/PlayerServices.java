@@ -16,6 +16,7 @@ import android.media.MediaPlayer;
 import android.media.ThumbnailUtils;
 import android.media.session.PlaybackState;
 import android.net.Uri;
+import android.os.Binder;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.support.v4.media.MediaMetadataCompat;
@@ -57,6 +58,7 @@ public class PlayerServices extends Service {
     public static final int ACTION_PAUSE = 2;
     public static final int ACTION_RESUME = 3;
     public static final int ACTION_STOP = 0;
+    public static final int ACTION_SEEK_TO = 6;
 
     public static final int REPEAT_MODE_NO_REPEAT = 0;
     public static final int REPEAT_MODE_SINGLE = 1;
@@ -64,18 +66,21 @@ public class PlayerServices extends Service {
 
     private static final String TAG_ERROR ="PlayerServices" ;
 
+
     SharedPreferences currentSettingStorage;
     ArrayList<SongDetails> listPlayer;
     MediaPlayer mMediaPlayer;
+    MediaSessionCompat sessionPlayer;
     private boolean isPlaying;
     private boolean isShuffle;
     private int repeatMode;
     private int currentPosition;
+    MyBinder myBinder=new MyBinder();
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        return myBinder;
     }
 
     @Override
@@ -252,24 +257,9 @@ public class PlayerServices extends Service {
         mMediaPlayer.start();
     }
 
-    @SuppressLint("WrongConstant")
+
     private void sendNotificationPlayer(SongDetails song) {
-        MediaSessionCompat sessionCompat = new MediaSessionCompat(this, "player");
-        sessionCompat.setActive(true);
-        sessionCompat.setMetadata(new MediaMetadataCompat.Builder()
-                .putLong(MediaMetadataCompat.METADATA_KEY_DURATION,mMediaPlayer.getDuration()).build());
-        sessionCompat.setPlaybackState(new PlaybackStateCompat.Builder()
-                .setState(PlaybackStateCompat.STATE_PLAYING,mMediaPlayer.getCurrentPosition(),1f,SystemClock.elapsedRealtime())
-                .setActions(PlaybackState.ACTION_SEEK_TO)
-                .build());
-        sessionCompat.setCallback(new MediaSessionCompat.Callback() {
-            @Override
-            public void onSeekTo(long pos) {
-                super.onSeekTo(pos);
-                mMediaPlayer.seekTo((int) pos);
-                sendNotificationPlayer(listPlayer.get(currentPosition));
-            }
-        });
+        setSessionPlayer();
         Bitmap thumbail=getSongThumbail(song.getmPath(),256,256);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle(song.getmTitle())
@@ -278,7 +268,7 @@ public class PlayerServices extends Service {
                 .setLargeIcon(thumbail)
                 .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
                         .setShowActionsInCompactView(0, 1, 2)
-                        .setMediaSession(sessionCompat.getSessionToken()));
+                        .setMediaSession(sessionPlayer.getSessionToken()));
         if (isPlaying){
             builder.addAction(R.drawable.ic_notification_prev_player, "Previous", getActionControlPlayerIntent(this, ACTION_SKIP_PREVIOUS))
                     .addAction(R.drawable.ic_notification_pause_player, "Pause", getActionControlPlayerIntent(this, ACTION_PAUSE))
@@ -291,8 +281,30 @@ public class PlayerServices extends Service {
                     .addAction(R.drawable.ic_notification_clear_player, "Stop", getActionControlPlayerIntent(this, ACTION_STOP));
         }
         Notification notification=builder.build();
-                
         startForeground(NOTIFICATION_PLAY_MUSIC, notification);
+    }
+    @SuppressLint("WrongConstant")
+    public void setSessionPlayer() {
+        if (sessionPlayer==null){
+            sessionPlayer=new MediaSessionCompat(this,"player");
+        }
+        sessionPlayer.setActive(true);
+        sessionPlayer.setMetadata(new MediaMetadataCompat.Builder()
+                .putLong(MediaMetadataCompat.METADATA_KEY_DURATION,mMediaPlayer.getDuration()).build());
+        sessionPlayer.setPlaybackState(new PlaybackStateCompat.Builder()
+                .setState(PlaybackStateCompat.STATE_PLAYING,mMediaPlayer.getCurrentPosition(),1f,SystemClock.elapsedRealtime())
+                .setActions(PlaybackState.ACTION_SEEK_TO)
+                .build());
+        sessionPlayer.setCallback(new MediaSessionCompat.Callback() {
+            @Override
+            public void onSeekTo(long pos) {
+                super.onSeekTo(pos);
+                seekTo((int) pos);
+                sendNotificationPlayer(listPlayer.get(currentPosition));
+            }
+
+
+        });
     }
 
     private Bitmap getSongThumbail(String path, int width, int height) {
@@ -327,12 +339,27 @@ public class PlayerServices extends Service {
 
     }
 
+    public long getCurrentPositionPlayer(){
+        return mMediaPlayer.getCurrentPosition();
+    }
+    public long getDurationPlayer(){
+        return mMediaPlayer.getDuration();
+    }
+    public void seekTo(int position){
+        mMediaPlayer.seekTo(position);
+    }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
         if (mMediaPlayer != null) {
             mMediaPlayer.release();
             mMediaPlayer = null;
+        }
+    }
+    public class MyBinder extends android.os.Binder{
+        public PlayerServices getPlayerServices(){
+            return PlayerServices.this;
         }
     }
 }
