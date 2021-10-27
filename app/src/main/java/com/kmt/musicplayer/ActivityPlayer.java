@@ -2,6 +2,7 @@ package com.kmt.musicplayer;
 
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -37,14 +38,16 @@ import java.text.SimpleDateFormat;
 public class ActivityPlayer extends AppCompatActivity {
     private static final String TAG_ERROR ="ActivityPlayer" ;
 
+    PlayerServices playerServices;
     SharedPreferences currentSettingStorage;
     SeekBar seekBarProgress;
     ImageView imageViewDisc;
     TextView tvRuntime,tvDestime,tvSongName,tvArtist;
     ImageButton btList,btBack,btShuffle,btPrevious,btPlayPause,btNext,btRepeat;
     ObjectAnimator discRoudingAnimation;
+    ProgressDialog waiter;
     private boolean isPlaying;
-    private int repeatMode=PlayerServices.REPEAT_MODE_NO_REPEAT;
+    private int repeatMode;
     private boolean isShuffle;
     private boolean isServicesConnected;
 
@@ -60,8 +63,9 @@ public class ActivityPlayer extends AppCompatActivity {
     private ServiceConnection serviceConnection=new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
+            isServicesConnected=true;
             PlayerServices.MyBinder myBinder= (PlayerServices.MyBinder) service;
-            PlayerServices playerServices=myBinder.getPlayerServices();
+            playerServices=myBinder.getPlayerServices();
             long duration=playerServices.getDurationPlayer();
             tvDestime.setText(df.format(duration));
             seekBarProgress.setMax((int) (duration/1000));
@@ -69,13 +73,15 @@ public class ActivityPlayer extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    long position= playerServices.getCurrentPositionPlayer();
-                    seekBarProgress.setProgress((int) (position/1000));
-                    tvRuntime.setText(df.format(position));
-                    handler.postDelayed(this,1000);
+                    if (isServicesConnected){
+                        long position= playerServices.getCurrentPositionPlayer();
+                        seekBarProgress.setProgress((int) (position/1000));
+                        tvRuntime.setText(df.format(position));
+                        handler.postDelayed(this,1000);
+                    }
+
                 }
             });
-            isServicesConnected=true;
         }
 
         @Override
@@ -91,7 +97,7 @@ public class ActivityPlayer extends AppCompatActivity {
         setContentView(R.layout.activity_player);
         initView();
         LocalBroadcastManager.getInstance(this).registerReceiver(receiverPlayerControl,new IntentFilter(PlayerServices.ACTION_CONTROL_PLAYER));
-
+        waiter=new ProgressDialog(this);
         Intent intent=getIntent();
         if (intent!=null){
             ComponentName componentName=new ComponentName(this,PlayerServices.class);
@@ -123,7 +129,18 @@ public class ActivityPlayer extends AppCompatActivity {
                 sendActionToServices(PlayerServices.ACTION_SKIP_NEXT);
             }
         });
+        seekBarProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {}
 
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                playerServices.seekTo(seekBar.getProgress()*1000);
+            }
+        });
     }
 
     private void sendActionToServices(int action) {
@@ -168,12 +185,25 @@ public class ActivityPlayer extends AppCompatActivity {
                 setDiscState();
                 break;
             case PlayerServices.ACTION_SKIP_PREVIOUS:
+                updateProgessAndDestime();
+                showSongInfo();
                 break;
             case PlayerServices.ACTION_SKIP_NEXT:
+                updateProgessAndDestime();
+                showSongInfo();
                 break;
             case PlayerServices.ACTION_STOP:
+                stopBindServices();
                 break;
 
+        }
+    }
+
+    private void updateProgessAndDestime() {
+        if (playerServices!=null){
+            long duration=playerServices.getDurationPlayer();
+            tvDestime.setText(df.format(duration));
+            seekBarProgress.setMax((int) (duration/1000));
         }
     }
 

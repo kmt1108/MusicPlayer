@@ -3,7 +3,9 @@ package com.kmt.musicplayer;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +13,9 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 
 import java.util.ArrayList;
 
@@ -41,18 +46,25 @@ public class ListSongAdapter extends RecyclerView.Adapter<ListSongAdapter.MyView
         SongDetails song=arrListSong.get(position);
         holder.songTitle.setText(song.getmTitle());
         holder.songTitle.setSelected(true);
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        holder.itemView.setOnClickListener(hd -> {
                 Intent intent=new Intent(context,ActivityPlayer.class);
                 intent.setAction(ACTION_CONTROL_PLAYER);
                 /*intent.putExtra("path",song.getmPath());
                 context.startActivity(intent);*/
                 intent.putExtra(ACTION_CONTROL_PLAYER,ACTION_START);
                 intent.putExtra("song",song);
+                //intent.putParcelableArrayListExtra("playlist",arrListSong);
+                saveCurrentPlayList();
                 context.startActivity(intent);
             }
-        });
+        );
+    }
+
+    private void saveCurrentPlayList() {
+        SharedPreferences sharedPreferences=context.getSharedPreferences(PlayerServices.CURRENT_SETTING,Context.MODE_PRIVATE);
+        Gson gson=new Gson();
+        JsonArray array=gson.toJsonTree(arrListSong).getAsJsonArray();
+        sharedPreferences.edit().putString(PlayerServices.KEY_CURRENT_PLAYLIST,array.toString()).apply();
     }
 
     @Override
@@ -61,7 +73,7 @@ public class ListSongAdapter extends RecyclerView.Adapter<ListSongAdapter.MyView
     }
 
 
-    class MyViewHolder extends RecyclerView.ViewHolder{
+    static class MyViewHolder extends RecyclerView.ViewHolder{
         TextView songTitle;
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);

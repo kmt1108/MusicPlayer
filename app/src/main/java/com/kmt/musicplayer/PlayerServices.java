@@ -10,13 +10,9 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.AudioAttributes;
-import android.media.AudioManager;
-import android.media.MediaMetadata;
 import android.media.MediaPlayer;
 import android.media.ThumbnailUtils;
 import android.media.session.PlaybackState;
-import android.net.Uri;
-import android.os.Binder;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.support.v4.media.MediaMetadataCompat;
@@ -24,18 +20,20 @@ import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
 import android.util.Size;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationCompatExtras;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.google.gson.Gson;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Random;
 
 import static com.kmt.musicplayer.MyApplication.CHANNEL_ID;
 
@@ -45,6 +43,7 @@ public class PlayerServices extends Service {
     public static final String KEY_SHUFFLE = "current_setting_shuffle";
     public static final String KEY_REPEAT_MODE = "current_setting_repeat";
     public static final String KEY_PLAYING_STATE = "current_playing_state";
+    public static final String KEY_CURRENT_PLAYLIST ="current_setting_playlist";
 
     private static final int NOTIFICATION_PLAY_MUSIC = 111;
 
@@ -95,29 +94,33 @@ public class PlayerServices extends Service {
         int action = intent.getIntExtra(ACTION_CONTROL_PLAYER, -1);
         switch (action) {
             case ACTION_START:
-                startPlayer(intent);
+                startPlayerAction(intent);
                 sendActionToActivity(action);
                 saveCurrentSetting(listPlayer.get(currentPosition));
                 break;
             case ACTION_PAUSE:
-                pausePlayer();
+                pausePlayerAction();
                 sendActionToActivity(action);
                 break;
             case ACTION_RESUME:
-                resumePlayer();
+                resumePlayerAction();
                 sendActionToActivity(action);
                 break;
             case ACTION_SKIP_PREVIOUS:
                 previousPlayer();
+                sendActionToActivity(action);
                 break;
             case ACTION_SKIP_NEXT:
-                nextPlayer();
+                handleCompleteSong();
+                sendActionToActivity(action);
                 break;
             case ACTION_STOP:
                 stopSelf();
+                sendActionToActivity(action);
                 break;
         }
     }
+
 
     private void sendActionToActivity(int action) {
         Intent intent=new Intent();
@@ -145,8 +148,16 @@ public class PlayerServices extends Service {
         return gson.toJson(song);
     }
 
-    private void nextPlayer() {
-        if (mMediaPlayer!=null&&listPlayer.size()>1){
+    private void handleCompleteSong() {
+        if (mMediaPlayer!=null&&listPlayer.size()>1) {
+            if (isShuffle) {
+                handleCompleteSongShuffle();
+            } else {
+                handleCompleteSongNoShuffle();
+            }
+        }
+
+        /*if (mMediaPlayer!=null&&listPlayer.size()>1){
             if (repeatMode==REPEAT_MODE_ALL){
                 if (currentPosition==listPlayer.size()-1){
                     currentPosition=0;
@@ -166,7 +177,51 @@ public class PlayerServices extends Service {
                     sendNotificationPlayer(listPlayer.get(currentPosition));
                 }
             }
+        }*/
+    }
+
+    private void handleCompleteSongNoShuffle() {
+        if (currentPosition<listPlayer.size()-1){
+            currentPosition=currentPosition+1;
+            setPlayerData(currentPosition);
+            if (isPlaying){
+                startOrResumePlayer();
+            }
+            saveCurrentSetting(listPlayer.get(currentPosition));
+            sendNotificationPlayer(listPlayer.get(currentPosition));
+        }else if (currentPosition==listPlayer.size()-1){
+            if (repeatMode==REPEAT_MODE_ALL){
+                currentPosition=0;
+                setPlayerData(currentPosition);
+                if (isPlaying){
+                    startOrResumePlayer();
+                }
+                saveCurrentSetting(listPlayer.get(currentPosition));
+                sendNotificationPlayer(listPlayer.get(currentPosition));
+            }else{
+                currentPosition=0;
+                saveCurrentSetting(listPlayer.get(currentPosition));
+                sendNotificationPlayer(listPlayer.get(currentPosition));
+                setPlayerData(currentPosition);
+                sendActionCallback(ACTION_PAUSE);
+            }
         }
+    }
+
+    private void handleCompleteSongShuffle() {
+        int shufflePositon =new Random().nextInt(listPlayer.size()-1);
+        while (shufflePositon==currentPosition){
+            shufflePositon =new Random().nextInt(listPlayer.size()-1);
+        }
+        currentPosition=shufflePositon;
+        if (isPlaying){
+            playSongInList(currentPosition);
+        }
+        sendNotificationPlayer(listPlayer.get(currentPosition));
+    }
+
+    private  void handleFinishPlaylist(){
+
     }
 
     private void previousPlayer() {
@@ -174,7 +229,11 @@ public class PlayerServices extends Service {
             if (mMediaPlayer.getCurrentPosition()<TIME_LIMIT_TO_SKIP){
                 if (currentPosition>0){
                     currentPosition=currentPosition-1;
-                    playSongInList(currentPosition);
+                    setPlayerData(currentPosition);
+                    if (isPlaying){
+                        startOrResumePlayer();
+                    }
+                    saveCurrentSetting(listPlayer.get(currentPosition));
                     sendNotificationPlayer(listPlayer.get(currentPosition));
                 }
             }else{
@@ -184,7 +243,15 @@ public class PlayerServices extends Service {
         }
     }
 
-    private void resumePlayer() {
+    private void sendActionCallback(int action) {
+        Intent intent = new Intent(this, PlayerServices.class);
+        intent.setAction(ACTION_CONTROL_PLAYER);
+        intent.putExtra(ACTION_CONTROL_PLAYER, action);
+        startService(intent);
+
+    }
+
+    private void resumePlayerAction() {
         if (mMediaPlayer!=null&&!isPlaying){
             mMediaPlayer.start();
             isPlaying=true;
@@ -192,7 +259,7 @@ public class PlayerServices extends Service {
         }
     }
 
-    private void pausePlayer() {
+    private void pausePlayerAction() {
         if (mMediaPlayer!=null&&isPlaying){
             mMediaPlayer.pause();
             isPlaying=false;
@@ -200,8 +267,8 @@ public class PlayerServices extends Service {
         }
     }
 
-    private void startPlayer(Intent intent) {
-        SongDetails song = intent.getParcelableExtra("song");
+    private void startPlayerAction(Intent intent) {
+        SongDetails song=intent.getParcelableExtra("song");
         if (song != null) {
             if (listPlayer.contains(song)) {
                 if (listPlayer.indexOf(song)!=currentPosition){
@@ -219,12 +286,8 @@ public class PlayerServices extends Service {
     }
 
     private void playSongInList(int index) {
-        SongDetails song = listPlayer.get(index);
-        if (mMediaPlayer != null) {
-            mMediaPlayer.release();
-            playBackNew(song.getmPath());
-        } else {
-            playBackNew(song.getmPath());
+        setPlayerData(index);
+        startOrResumePlayer();
            /* try {
                 mMediaPlayer.setDataSource(this, Uri.parse(song.getmPath()));
                 mMediaPlayer.prepare();
@@ -233,9 +296,12 @@ public class PlayerServices extends Service {
             } catch (IOException e) {
                 e.printStackTrace();
             }*/
-        }
     }
-    private void playBackNew(String path){
+    private void setPlayerData(int postion){
+        String path=listPlayer.get(postion).getmPath();
+        if (mMediaPlayer!=null){
+            mMediaPlayer.release();
+        }
         mMediaPlayer = new MediaPlayer();
         mMediaPlayer.setAudioAttributes(new AudioAttributes.Builder()
                 .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
@@ -247,14 +313,19 @@ public class PlayerServices extends Service {
         } catch (IOException e) {
             Log.e(TAG_ERROR,"playBackNew:"+e.getMessage());
         }
-        mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                nextPlayer();
+        mMediaPlayer.setOnCompletionListener(mp -> handleCompleteSong());
+    }
+    public void startOrResumePlayer(){
+        if (mMediaPlayer!=null){
+            if (mMediaPlayer.getCurrentPosition()==0){
+                mMediaPlayer.start();
+            }else{
+                mMediaPlayer.start();
             }
-        });
-        isPlaying=true;
-        mMediaPlayer.start();
+            isPlaying=true;
+        }
+
+
     }
 
 
@@ -285,16 +356,22 @@ public class PlayerServices extends Service {
     }
     @SuppressLint("WrongConstant")
     public void setSessionPlayer() {
+        PlaybackStateCompat.Builder builder=new PlaybackStateCompat.Builder();
+        if (isPlaying){
+            builder.setState(PlaybackStateCompat.STATE_PLAYING,mMediaPlayer.getCurrentPosition(),1f,SystemClock.elapsedRealtime());
+        }else {
+            builder.setState(PlaybackState.STATE_PAUSED,mMediaPlayer.getCurrentPosition(),1f,SystemClock.elapsedRealtime());
+        }
+        builder.setActions(PlaybackState.ACTION_SEEK_TO);
+        PlaybackStateCompat playbackState=builder.build();
+
         if (sessionPlayer==null){
             sessionPlayer=new MediaSessionCompat(this,"player");
         }
         sessionPlayer.setActive(true);
         sessionPlayer.setMetadata(new MediaMetadataCompat.Builder()
                 .putLong(MediaMetadataCompat.METADATA_KEY_DURATION,mMediaPlayer.getDuration()).build());
-        sessionPlayer.setPlaybackState(new PlaybackStateCompat.Builder()
-                .setState(PlaybackStateCompat.STATE_PLAYING,mMediaPlayer.getCurrentPosition(),1f,SystemClock.elapsedRealtime())
-                .setActions(PlaybackState.ACTION_SEEK_TO)
-                .build());
+        sessionPlayer.setPlaybackState(playbackState);
         sessionPlayer.setCallback(new MediaSessionCompat.Callback() {
             @Override
             public void onSeekTo(long pos) {
@@ -302,8 +379,6 @@ public class PlayerServices extends Service {
                 seekTo((int) pos);
                 sendNotificationPlayer(listPlayer.get(currentPosition));
             }
-
-
         });
     }
 
@@ -329,11 +404,12 @@ public class PlayerServices extends Service {
         return PendingIntent.getService(context.getApplicationContext(),action, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
+
     @Override
     public void onCreate() {
         super.onCreate();
-        if (listPlayer == null) {
-            listPlayer = new ArrayList<>();
+        if (listPlayer==null){
+            listPlayer=new ArrayList<>();
         }
         getSettingState();
 
@@ -347,6 +423,7 @@ public class PlayerServices extends Service {
     }
     public void seekTo(int position){
         mMediaPlayer.seekTo(position);
+        sendNotificationPlayer(listPlayer.get(currentPosition));
     }
 
     @Override
