@@ -53,7 +53,7 @@ public class ListSongAdapter extends RecyclerView.Adapter<ListSongAdapter.MyView
                 context.startActivity(intent);*/
                 intent.putExtra(ACTION_CONTROL_PLAYER,ACTION_START);
                 intent.putExtra("song",song);
-                //intent.putParcelableArrayListExtra("playlist",arrListSong);
+                intent.putParcelableArrayListExtra("playlist",arrListSong);
                 saveCurrentPlayList();
                 context.startActivity(intent);
             }

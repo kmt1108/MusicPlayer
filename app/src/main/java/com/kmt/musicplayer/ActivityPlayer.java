@@ -107,28 +107,15 @@ public class ActivityPlayer extends AppCompatActivity {
         }
         setDiscAnimation();
 
-        btPlayPause.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (isPlaying){
-                    sendActionToServices(PlayerServices.ACTION_PAUSE);
-                }else{
-                    sendActionToServices(PlayerServices.ACTION_RESUME);
-                }
+        btPlayPause.setOnClickListener(v -> {
+            if (isPlaying){
+                sendActionToServices(PlayerServices.ACTION_PAUSE);
+            }else{
+                sendActionToServices(PlayerServices.ACTION_RESUME);
             }
         });
-        btPrevious.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sendActionToServices(PlayerServices.ACTION_SKIP_PREVIOUS);
-            }
-        });
-        btNext.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sendActionToServices(PlayerServices.ACTION_SKIP_NEXT);
-            }
-        });
+        btPrevious.setOnClickListener(v -> sendActionToServices(PlayerServices.ACTION_SKIP_PREVIOUS));
+        btNext.setOnClickListener(v -> sendActionToServices(PlayerServices.ACTION_SKIP_NEXT));
         seekBarProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {}
@@ -167,36 +154,38 @@ public class ActivityPlayer extends AppCompatActivity {
 
     private void syncControlPlayer(Intent intent) {
         int action=intent.getIntExtra(PlayerServices.ACTION_CONTROL_PLAYER,-1);
+        isPlaying=intent.getBooleanExtra(PlayerServices.KEY_PLAYING_STATE,false);
         switch (action){
             case PlayerServices.ACTION_START:
                 showSongInfo();
-                isPlaying=intent.getBooleanExtra(PlayerServices.KEY_PLAYING_STATE,false);
-                setStateButtonPlay();
-                setDiscState();
+                setStatePlaying();
                 break;
             case PlayerServices.ACTION_PAUSE:
-                isPlaying=intent.getBooleanExtra(PlayerServices.KEY_PLAYING_STATE,false);
-                setStateButtonPlay();
-                setDiscState();
+                setStatePlaying();
                 break;
             case PlayerServices.ACTION_RESUME:
-                isPlaying=intent.getBooleanExtra(PlayerServices.KEY_PLAYING_STATE,false);
-                setStateButtonPlay();
-                setDiscState();
+                setStatePlaying();
                 break;
             case PlayerServices.ACTION_SKIP_PREVIOUS:
-                updateProgessAndDestime();
                 showSongInfo();
+                updateProgessAndDestime();
+                setStatePlaying();
                 break;
             case PlayerServices.ACTION_SKIP_NEXT:
-                updateProgessAndDestime();
                 showSongInfo();
+                updateProgessAndDestime();
+                setStatePlaying();
                 break;
             case PlayerServices.ACTION_STOP:
                 stopBindServices();
                 break;
 
         }
+    }
+
+    private void setStatePlaying() {
+        setStateButtonPlay();
+        setDiscState();
     }
 
     private void updateProgessAndDestime() {

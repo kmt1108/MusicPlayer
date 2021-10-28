@@ -84,6 +84,8 @@ public class PlayerServices extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        int action=intent.getIntExtra(ACTION_CONTROL_PLAYER,-1);
+
         if (intent.getAction().equals(ACTION_CONTROL_PLAYER)) {
             handleControlPlayer(intent);
         }
@@ -201,9 +203,9 @@ public class PlayerServices extends Service {
             }else{
                 currentPosition=0;
                 saveCurrentSetting(listPlayer.get(currentPosition));
-                sendNotificationPlayer(listPlayer.get(currentPosition));
                 setPlayerData(currentPosition);
-                sendActionCallback(ACTION_PAUSE);
+                isPlaying=false;
+                sendNotificationPlayer(listPlayer.get(currentPosition));
             }
         }
     }
@@ -253,7 +255,7 @@ public class PlayerServices extends Service {
 
     private void resumePlayerAction() {
         if (mMediaPlayer!=null&&!isPlaying){
-            mMediaPlayer.start();
+            startOrResumePlayer();
             isPlaying=true;
             sendNotificationPlayer(listPlayer.get(currentPosition));
         }
@@ -317,11 +319,7 @@ public class PlayerServices extends Service {
     }
     public void startOrResumePlayer(){
         if (mMediaPlayer!=null){
-            if (mMediaPlayer.getCurrentPosition()==0){
-                mMediaPlayer.start();
-            }else{
-                mMediaPlayer.start();
-            }
+            mMediaPlayer.start();
             isPlaying=true;
         }
 
