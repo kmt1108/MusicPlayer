@@ -47,15 +47,16 @@ public class ListSongAdapter extends RecyclerView.Adapter<ListSongAdapter.MyView
         holder.songTitle.setText(song.getmTitle());
         holder.songTitle.setSelected(true);
         holder.itemView.setOnClickListener(hd -> {
-                Intent intent=new Intent(context,ActivityPlayer.class);
+                Intent intent=new Intent(context,PlayerServices.class);
                 intent.setAction(ACTION_CONTROL_PLAYER);
                 /*intent.putExtra("path",song.getmPath());
                 context.startActivity(intent);*/
                 intent.putExtra(ACTION_CONTROL_PLAYER,ACTION_START);
                 intent.putExtra("song",song);
                 intent.putParcelableArrayListExtra("playlist",arrListSong);
-                saveCurrentPlayList();
-                context.startActivity(intent);
+                context.startService(intent);
+                /*saveCurrentPlayList();
+                context.startActivity(intent);*/
             }
         );
     }

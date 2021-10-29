@@ -105,7 +105,7 @@ public class SongDetails implements Parcelable {
         try{
             SongDetails song= (SongDetails) obj;
             if (song!=null){
-                return mTitle.equals(song.getmTitle())||mArtist.equals(song.getmArtist());
+                return mTitle.equals(song.getmTitle())&&mArtist.equals(song.getmArtist());
             }else{
                 return false;
             }
