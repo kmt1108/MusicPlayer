@@ -11,6 +11,12 @@
     <string name="tittle_folder_explore">Folder Explore</string>
     <string name="alert_no_next">Can\'t next: This xong is last of list</string>
     <string name="default_song_name">Song Name</string>
+    <string name="folder_name_default">Folder name</string>
+    <string name="no_permission_read_write">Grant permission to get list song</string>
+    <string name="sqlite_error_cant_recreate_table">Can\'t recreate table</string>
+    <string name="alert_scan_music">Scan will reload list song, delete all song in your playlist</string>
+    <string name="ok">ok</string>
+    <string name="cancel">cancel</string>
 
     <string-array name="arr_title_bibr_item">
         <item>@string/title_library_allsong</item>

@@ -2,6 +2,7 @@ package com.kmt.musicplayer;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -9,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.PermissionInfo;
@@ -20,6 +22,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.View;
 import android.widget.ExpandableListView;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import java.io.File;
@@ -29,9 +32,13 @@ import java.util.HashMap;
 import java.util.List;
 
 public class ActivityListSong extends AppCompatActivity {
+    private static final int TYPE_SCAN_MUSIC =1;
+    private static final int TYPE_START_ACTIVITY =0;
+
     ArrayList<SongDetails> arrAllsongs;
     ListSongAdapter adapter;
     RecyclerView listSongView;
+    ImageButton btScan;
     SQLiteAdapter dbAdapter;
 
     @Override
@@ -39,28 +46,49 @@ public class ActivityListSong extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list_song);
         initView();
+        getListSong(TYPE_START_ACTIVITY);
+        btScan.setOnClickListener(sc->{
+            showAlertDialog();
+        });
+
+
+
+    }
+
+    private void showAlertDialog() {
+        AlertDialog dialog= new AlertDialog.Builder(this)
+                .setCancelable(true)
+                .setMessage(getString(R.string.alert_scan_music))
+                .setPositiveButton(getString(R.string.ok), (dialog1, which) -> getListSong(TYPE_SCAN_MUSIC))
+                .setNegativeButton(getString(R.string.cancel), (dialog12, which) -> dialog12.cancel())
+                .show();
+
+    }
+
+
+    private void getListSong(int type) {
         if (ContextCompat.checkSelfPermission(
                 this, Manifest.permission.READ_EXTERNAL_STORAGE) ==
                 PackageManager.PERMISSION_GRANTED) {
             // You can use the API that requires the permission.
+            if (type==TYPE_SCAN_MUSIC){
+                dbAdapter.reCreateTableListAll();
+                getAllAudioFromDevices();
+            }
             arrAllsongs=dbAdapter.getAllSong();
+            setAdapterListSong();
+
         } else if (shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
-            // In an educational UI, explain to the user why your app requires this
-            // permission for a specific feature to behave as expected. In this UI,
-            // include a "cancel" or "no thanks" button that allows the user to
-            // continue using your app without granting the permission.
+            Toast.makeText(this, getString(R.string.no_permission_read_write), Toast.LENGTH_SHORT).show();
         } else {
             // You can directly ask for the permission.
             requestPermissions(new String[] { Manifest.permission.READ_EXTERNAL_STORAGE },23);
         }
-
-
-        setAdapterListSong();
-
     }
 
     private void initView() {
         listSongView=findViewById(R.id.listAllsong);
+        btScan=findViewById(R.id.btScanMusic);
         dbAdapter=new SQLiteAdapter(this);
     }
 
@@ -75,7 +103,10 @@ public class ActivityListSong extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode==23&&grantResults[0]==PackageManager.PERMISSION_GRANTED){
+            getAllAudioFromDevices();
             arrAllsongs=dbAdapter.getAllSong();
+            setAdapterListSong();
+            //listSongView.invalidate();
         }else{
             finish();
         }
@@ -88,8 +119,6 @@ public class ActivityListSong extends AppCompatActivity {
         }else{
             collection=MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         }
-        Toast.makeText(this, collection.toString(), Toast.LENGTH_SHORT).show();
-
         String[] projection=new String[]{
                 MediaStore.Audio.Media.DATA,
                 MediaStore.Audio.Media.TITLE,

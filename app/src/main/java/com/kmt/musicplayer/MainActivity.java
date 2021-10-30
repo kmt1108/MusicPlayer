@@ -64,7 +64,6 @@ public class MainActivity extends AppCompatActivity {
         String[] arrTittleLibrary=getResources().getStringArray(R.array.arr_title_bibr_item);
         String[] arrTittleTools=getResources().getStringArray(R.array.arr_title_tools_item);
         String[] arrImgLibrary=getResources().getStringArray(R.array.arr_img_libr_item);
-        Toast.makeText(this, arrImgLibrary[1]+"", Toast.LENGTH_SHORT).show();
         String[] arrImgTools=getResources().getStringArray(R.array.arr_img_tools_item);
         adapterLibrary=new GridviewMainAdapter(this,arrImgLibrary,arrTittleLibrary);
         adapterTools=new GridviewMainAdapter(this,arrImgTools,arrTittleTools);

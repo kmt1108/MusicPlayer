@@ -32,4 +32,15 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView3"></androidx.recyclerview.widget.RecyclerView>
+
+    <ImageButton
+        android:id="@+id/btScanMusic"
+        android:layout_width="30dp"
+        android:layout_height="30sp"
+        android:layout_marginEnd="@dimen/margin_end_activity"
+        android:scaleType="fitXY"
+        app:layout_constraintBottom_toBottomOf="@+id/textView3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/textView3"
+        app:srcCompat="@drawable/all_song_scan_icon" />
 </androidx.constraintlayout.widget.ConstraintLayout>

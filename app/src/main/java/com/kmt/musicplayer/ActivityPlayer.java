@@ -45,7 +45,6 @@ public class ActivityPlayer extends AppCompatActivity {
     TextView tvRuntime,tvDestime,tvSongName,tvArtist;
     ImageButton btList,btBack,btShuffle,btPrevious,btPlayPause,btNext,btRepeat;
     ObjectAnimator discRoudingAnimation;
-    ProgressDialog waiter;
     private boolean isPlaying;
     private int repeatMode;
     private boolean isShuffle;
@@ -57,6 +56,7 @@ public class ActivityPlayer extends AppCompatActivity {
     BroadcastReceiver receiverPlayerControl=new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            int action =intent.getIntExtra(PlayerServices.ACTION_CONTROL_PLAYER,-1);
             syncControlPlayer(intent);
         }
     };
@@ -96,17 +96,15 @@ public class ActivityPlayer extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
         initView();
-        LocalBroadcastManager.getInstance(this).registerReceiver(receiverPlayerControl,new IntentFilter(PlayerServices.ACTION_CONTROL_PLAYER));
-        waiter=new ProgressDialog(this);
-        Intent intent=getIntent();
-        if (intent!=null){
-            ComponentName componentName=new ComponentName(this,PlayerServices.class);
-            intent.setComponent(componentName);
-            startService(intent);
-            bindService(intent,serviceConnection,Context.BIND_AUTO_CREATE);
-        }
         setDiscAnimation();
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiverPlayerControl,new IntentFilter(PlayerServices.ACTION_CONTROL_PLAYER));
+        if(isIntentStartSong(getIntent())){
+            isPlaying=true;
+            showSongInfo();
+            setStatePlaying();
 
+        }
+        bindService(new Intent(this,PlayerServices.class),serviceConnection,Context.BIND_AUTO_CREATE);
         btPlayPause.setOnClickListener(v -> {
             if (isPlaying){
                 sendActionToServices(PlayerServices.ACTION_PAUSE);
@@ -128,6 +126,15 @@ public class ActivityPlayer extends AppCompatActivity {
                 playerServices.seekTo(seekBar.getProgress()*1000);
             }
         });
+    }
+
+    private boolean isIntentStartSong(Intent intent) {
+        if (PlayerServices.ACTION_CONTROL_PLAYER.equals(intent.getAction())){
+            if (intent.getIntExtra(PlayerServices.ACTION_CONTROL_PLAYER,-1)==PlayerServices.ACTION_START){
+                return true;
+            }
+        }
+        return false;
     }
 
     private void sendActionToServices(int action) {

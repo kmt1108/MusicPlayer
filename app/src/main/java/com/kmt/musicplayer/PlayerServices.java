@@ -33,6 +33,7 @@ import org.json.JSONException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import static com.kmt.musicplayer.MyApplication.CHANNEL_ID;
@@ -73,7 +74,7 @@ public class PlayerServices extends Service {
     private boolean isPlaying;
     private boolean isShuffle;
     private int repeatMode;
-    private int currentPosition;
+    private int currentPosition=-1;
     MyBinder myBinder=new MyBinder();
 
     @Nullable
@@ -85,7 +86,6 @@ public class PlayerServices extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         int action=intent.getIntExtra(ACTION_CONTROL_PLAYER,-1);
-
         if (intent.getAction().equals(ACTION_CONTROL_PLAYER)) {
             handleControlPlayer(intent);
         }
@@ -270,17 +270,21 @@ public class PlayerServices extends Service {
     }
 
     private void startPlayerAction(Intent intent) {
+        if (listPlayer==null){
+            listPlayer=intent.getParcelableArrayListExtra("playlist");
+        }
         SongDetails song=intent.getParcelableExtra("song");
         if (song != null) {
             if (listPlayer.contains(song)) {
-                if (listPlayer.indexOf(song)!=currentPosition){
-                    currentPosition=listPlayer.indexOf(song);
+                int index = listPlayer.indexOf(song);
+                if (currentPosition == -1 || index != currentPosition) {
+                    currentPosition = index;
                     playSongInList(currentPosition);
                     sendNotificationPlayer(song);
                 }
-            }else{
+            } else {
                 listPlayer.add(song);
-                currentPosition=listPlayer.indexOf(song);
+                currentPosition = listPlayer.indexOf(song);
                 playSongInList(currentPosition);
                 sendNotificationPlayer(song);
             }
@@ -406,9 +410,6 @@ public class PlayerServices extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        if (listPlayer==null){
-            listPlayer=new ArrayList<>();
-        }
         getSettingState();
 
     }

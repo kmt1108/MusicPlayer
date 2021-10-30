@@ -14,9 +14,11 @@ import java.util.PropertyResourceBundle;
 
 public class SQLiteAdapter {
     private dbHelper mHelper;
+    Context context;
 
     public SQLiteAdapter(Context context) {
         this.mHelper = new dbHelper(context);
+        this.context=context;
     }
 
     public HashMap<String,ArrayList<SongDetails>> getAllSongWithFolder(){
@@ -154,6 +156,16 @@ public class SQLiteAdapter {
         } catch (Exception e) {
             return false;
         }
+    }
+    public void reCreateTableListAll(){
+        try{
+            SQLiteDatabase db=mHelper.getWritableDatabase();
+            db.execSQL(dbHelper.DROP_TABLE_ALLSONG);
+            db.execSQL(dbHelper.CREATE_TB_ALLSONG);
+        }catch(Exception e){
+            Toast.makeText(context,context.getString(R.string.sqlite_error_cant_recreate_table), Toast.LENGTH_SHORT).show();
+        }
+
     }
 
 

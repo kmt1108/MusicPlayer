@@ -1,5 +1,6 @@
 package com.kmt.musicplayer;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -43,21 +44,25 @@ public class ListSongAdapter extends RecyclerView.Adapter<ListSongAdapter.MyView
 
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
-        SongDetails song=arrListSong.get(position);
+        SongDetails song = arrListSong.get(position);
         holder.songTitle.setText(song.getmTitle());
-        holder.songTitle.setSelected(true);
         holder.itemView.setOnClickListener(hd -> {
-                Intent intent=new Intent(context,PlayerServices.class);
-                intent.setAction(ACTION_CONTROL_PLAYER);
+                    Intent intent = new Intent(context, PlayerServices.class);
+                    intent.setAction(ACTION_CONTROL_PLAYER);
                 /*intent.putExtra("path",song.getmPath());
                 context.startActivity(intent);*/
-                intent.putExtra(ACTION_CONTROL_PLAYER,ACTION_START);
-                intent.putExtra("song",song);
-                intent.putParcelableArrayListExtra("playlist",arrListSong);
-                context.startService(intent);
-                /*saveCurrentPlayList();
-                context.startActivity(intent);*/
-            }
+                    intent.putExtra(ACTION_CONTROL_PLAYER, ACTION_START);
+                    intent.putExtra("song", song);
+                    intent.putParcelableArrayListExtra("playlist", arrListSong);
+                    context.startService(intent);
+                    intent.setComponent(new ComponentName(context,ActivityPlayer.class));
+                    intent.removeExtra("song");
+                    intent.removeExtra("playlist");
+                    context.startActivity(intent);
+
+            //saveCurrentPlayList();
+                    //context.startActivity(intent);
+                }
         );
     }
 
